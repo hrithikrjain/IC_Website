@@ -1,0 +1,47 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: intellectual-capital-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: intellectual-capital-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/intellectual_capital
+      JWT_SECRET_KEY: change-me-in-production
+      ADMIN_EMAIL: admin@intellectualcapital.in
+      ADMIN_PASSWORD: Admin@12345
+      CORS_ORIGINS: http://localhost
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+    - "5001:5000"
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    container_name: intellectual-capital-db
+    environment:
+      POSTGRES_DB: intellectual_capital
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+# Stop and remove the containers with: docker compose down
